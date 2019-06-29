@@ -1,5 +1,7 @@
+import re
 import itertools
 import functools
+from paste.deploy.converters import asbool
 from prometheus_client import make_wsgi_app, Summary, Histogram
 from prometheus_client.context_managers import Timer
 
@@ -11,20 +13,27 @@ def filter_factory(global_config, **local_conf):
 	if not latency_name:
 		latency_name = "response_latency_seconds"
 	latency_metric = None
-	if not local_conf.get("disable_latency"):
+	if not asbool(local_conf.get("disable_latency")):
 		latency_metric = Histogram(latency_name, "Response latency (seconds)", ["method", "status"])
 	
 	length_name = local_conf.get("length")
 	if not length_name:
 		length_name = "response_length_bytes"
 	length_metric = None
-	if not local_conf.get("disable_length"):
+	if not asbool(local_conf.get("disable_length")):
 		length_metric = Summary(length_name, "Response length (bytes)", ["method", "status"])
+	
+	path_regex = local_conf.get("path_regex", ".*")
 	
 	def middleware(application):
 		@functools.wraps(application)
 		def wsgiapp(environ, start_response):
-			extra = { "method": environ["REQUEST_METHOD"] }
+			if not re.match(path_regex, environ.get("SCRIPT_NAME","")+environ.get("PATH_INFO","")):
+				return application(environ, start_response)
+			
+			extra = {
+				"method": environ["REQUEST_METHOD"],
+			}
 			
 			class Sentinel(object):
 				def __init__(self):
@@ -73,3 +82,4 @@ def filter_factory(global_config, **local_conf):
 		return wsgiapp
 	
 	return middleware
+
