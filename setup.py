@@ -5,7 +5,6 @@ from setuptools import setup, find_packages
 setup(
     name='prometheus_paster',
     version='0.1',
-    description='python-prometheus paste helper',
     author="Kawai Hiroaki",
     author_email="hiroaki.kawai@gmail.com",
     description="prometheus_client and pastedeploy glue",
