@@ -8,6 +8,9 @@ setup(
     author="Kawai Hiroaki",
     author_email="hiroaki.kawai@gmail.com",
     description="prometheus_client and pastedeploy glue",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/hkwi/python-prometheus-paster",
     packages=find_packages(),
     py_modules=["prometheus_paster"],
     entry_points={
